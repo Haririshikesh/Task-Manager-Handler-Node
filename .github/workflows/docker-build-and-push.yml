@@ -1,39 +1,57 @@
-name: Build and Push Docker Image
+# Name of your workflow, displayed in the GitHub Actions tab
+name: Build and Push Docker Image (Single-Stage)
 
+# When this workflow will run
 on:
   push:
+    # Trigger the workflow on pushes to the 'main' branch
     branches:
       - main
 
+# Jobs define a series of steps to be executed
 jobs:
   build-and-push:
-    runs-on: ubuntu-latest # The GitHub-hosted runner environment
+    # Name of the job
+    name: Build Docker Image and Push to Docker Hub
 
+    # The type of runner that the job will run on
+    runs-on: ubuntu-latest
+
+    # Steps define the individual tasks within a job
     steps:
+      # Step 1: Checkout the repository code
+      # This action checks out your repository under $GITHUB_WORKSPACE,
+      # so your workflow can access your Dockerfile and application code.
       - name: Checkout code
-        uses: actions/checkout@v4 # Checks out your repository
+        uses: actions/checkout@v4
 
+      # Step 2: Log in to Docker Hub
+      # This action logs into Docker Hub using your username and a Personal Access Token (PAT).
+      # The credentials are retrieved securely from the GitHub secrets you set up.
       - name: Login to Docker Hub
-        uses: docker/login-action@v3 # Action to log in to Docker Hub
+        uses: docker/login-action@v3
         with:
-          username: ${{ secrets.DOCKER_USERNAME }} # Your Docker Hub username from secrets
-          password: ${{ secrets.DOCKER_PASSWORD }} # Your Docker Hub Access Token from secrets
+          username: ${{ secrets.DOCKER_USERNAME }}
+          password: ${{ secrets.DOCKER_PASSWORD }}
 
+      # Step 3: Set up Docker Buildx (Optional but Recommended for modern builds)
+      # Buildx is a Docker CLI plugin that extends 'docker build' with powerful features,
+      # such as building with BuildKit (which is faster and more efficient) and multi-platform builds.
       - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v3 # Sets up Buildx for efficient Docker builds
+        uses: docker/setup-buildx-action@v3
 
+      # Step 4: Build and push the Docker image
+      # This step uses the 'docker/build-push-action' to build your image from the Dockerfile.
+      # It automatically uses Buildx.
       - name: Build and push Docker image
-        uses: docker/build-push-action@v5 # Builds and pushes the Docker image
+        uses: docker/build-push-action@v5
         with:
-          context: . # Build context: current directory (where Dockerfile is)
-          file: ./Dockerfile # Path to your Dockerfile
-          push: true # Push the image to Docker Hub
-          tags: | # Define image tags
-            rishikeshkesavansanmina/my-node-docker-app:latest
-            rishikeshkesavansanmina/my-node-docker-app:${{ github.sha }}
-            
-      - name: Clean Buildx cache
-        run: docker buildx prune --force --all --filter "until=24h" # Prune cache older than 24 hours
-        if: always()
-
-            
+          context: . # The build context is the current directory (where your Dockerfile is located)
+          file: ./Dockerfile # Explicitly specify the path to your Dockerfile
+          push: true # Set to 'true' to push the built image to Docker Hub
+          tags: | # Define the tags for your Docker image.
+            # IMPORTANT: Replace 'YOUR_DOCKERHUB_USERNAME' with your actual Docker Hub username!
+            YOUR_DOCKERHUB_USERNAME/my-node-docker-app:latest # A 'latest' tag
+            YOUR_DOCKERHUB_USERNAME/my-node-docker-app:${{ github.sha }} # Tagged with the Git commit SHA (unique for each push)
+            # You can add more tags here if needed, e.g.:
+            # YOUR_DOCKERHUB_USERNAME/my-node-docker-app:v1.0.0
