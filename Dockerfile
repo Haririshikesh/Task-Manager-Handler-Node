@@ -1,7 +1,7 @@
 # Stage 1: Build the application
 # This stage uses a Node.js image as its base.
 # The 'AS builder' gives this stage a name so you can reference it later.
-FROM node:20-alpine AS builder  # <--- THIS LINE IS CRUCIAL AND LIKELY THE SOURCE OF YOUR ERROR
+FROM node:20-alpine AS builder
 
 # Set the working directory inside the builder container
 WORKDIR /app
