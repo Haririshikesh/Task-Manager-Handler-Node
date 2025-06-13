@@ -26,10 +26,15 @@ RUN apk add --no-cache ca-certificates
 WORKDIR /app
 
 # Copy just the necessary files from the 'builder' stage
-# This refers to the stage named 'builder' defined above.
+# These are the typical required files for a Node.js app
 COPY --from=builder /app/node_modules ./node_modules
-COPY --from=builder /app/package.json ./ # Add this if you rely on package.json at runtime
-COPY --from=builder /app/server.js ./    # Your main application file
+COPY --from=builder /app/package.json ./
+COPY --from=builder /app/server.js ./
+
+# IMPORTANT: Ensure NO other 'COPY' commands here try to use 'runtime' as a destination
+# If you had lines like:
+# COPY --from=builder /app/some_folder ./runtime  <-- THIS WOULD CAUSE THE ERROR IF ./runtime IS A FILE
+# Make sure such lines are commented out or removed if they are causing conflict.
 
 EXPOSE 3000
 CMD ["node", "server.js"]
