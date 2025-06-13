@@ -1,4 +1,22 @@
+# Stage 1: Build the application
+# This stage uses a Node.js image as its base.
+# The 'AS builder' gives this stage a name so you can reference it later.
+FROM node:20-alpine AS builder  # <--- THIS LINE IS CRUCIAL AND LIKELY THE SOURCE OF YOUR ERROR
+
+# Set the working directory inside the builder container
+WORKDIR /app
+
+# Copy package.json and package-lock.json first to leverage Docker cache
+COPY package*.json ./
+
+# Install production dependencies
+RUN npm install --production --silent
+
+# Copy the rest of the application code
+COPY . .
+
 # Stage 2: Create the final lean image
+# This stage uses a very minimal Alpine Linux image as its base
 FROM alpine:latest
 
 # Install ca-certificates for HTTPS requests (often needed for external APIs)
@@ -7,18 +25,11 @@ RUN apk add --no-cache ca-certificates
 # Set the working directory for the final image
 WORKDIR /app
 
-# Copy just the necessary files from the builder stage
-# These are the typical required files for a Node.js app
+# Copy just the necessary files from the 'builder' stage
+# This refers to the stage named 'builder' defined above.
 COPY --from=builder /app/node_modules ./node_modules
-COPY --from=builder /app/package.json ./
-COPY --from=builder /app/server.js ./
-
-# Ensure no other COPY commands are trying to copy directories onto files,
-# especially if you had other `COPY` lines uncommented or added.
-# For example, if you uncommented and `src` or `dist` are directories:
-# COPY --from=builder /app/src ./src/
-# COPY --from=builder /app/dist ./dist/
-# Note the trailing slashes which clarify they are directories
+COPY --from=builder /app/package.json ./ # Add this if you rely on package.json at runtime
+COPY --from=builder /app/server.js ./    # Your main application file
 
 EXPOSE 3000
 CMD ["node", "server.js"]
