@@ -30,4 +30,4 @@ jobs:
           push: true # Push the image to Docker Hub
           tags: | # Define image tags
             rishikeshkesavansanmina/my-node-docker-app:latest
-            rishikeshkesavansanmina/my-node-docker-app:${{ github.sha }} # Tag with the Git commit SHA for uniqueness
+            rishikeshkesavansanmina/my-node-docker-app:${{ github.sha }}
