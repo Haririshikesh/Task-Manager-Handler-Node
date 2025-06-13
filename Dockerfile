@@ -1,13 +1,10 @@
-# Stage 1: Build the application
-# This stage uses a Node.js image as its base.
-# The 'AS builder' gives this stage a name so you can reference it later.
 FROM node:20-alpine AS builder
 
 # Set the working directory inside the builder container
-WORKDIR /app
+WORKDIR /app # So, /app is now the current directory
 
 # Copy package.json and package-lock.json first to leverage Docker cache
-COPY package*.json ./
+COPY package*.json ./ # Copies package.json from your host into /app/
 
 # Install production dependencies
 RUN npm install --production --silent
