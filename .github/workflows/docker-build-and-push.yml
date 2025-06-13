@@ -31,3 +31,9 @@ jobs:
           tags: | # Define image tags
             rishikeshkesavansanmina/my-node-docker-app:latest
             rishikeshkesavansanmina/my-node-docker-app:${{ github.sha }}
+            
+      - name: Clean Buildx cache
+        run: docker buildx prune --force --all --filter "until=24h" # Prune cache older than 24 hours
+        if: always()
+
+            
